@@ -40,6 +40,21 @@ def convert_xcloc_to_excel(xcloc_folder, output_excel):
         if not found_xliff_file:
             print(f"在目录 {xcloc_folder} 中没有找到任何XLIFF文件。")
 
+    # 冻结第一行
+    ws.freeze_panes = 'A2'  # 这里的 'A2' 表示冻结第一行，第二行开始是活动行
+    # 设置每列的宽度为自适应宽度
+    for column in ws.columns:
+        max_length = 0
+        column_letter = column[0].column_letter  # 获取列字母
+        for cell in column:
+            try:
+                if cell.value is not None:   # 确保单元格不为空
+                    cell_value = str(cell.value)
+                    max_length = max(max_length, len(cell_value))  # 更新最大长度
+            except Exception as e:
+                 print(f"调整列宽时发生错误: {e}")
+        adjusted_width = (max_length + 2)  # 可以加一点额外的宽度
+        ws.column_dimensions[column_letter].width = adjusted_width
     # 保存Excel文件
     wb.save(output_excel)
     print(f"转换完成，Excel文件已保存至: {output_excel}")
