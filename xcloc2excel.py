@@ -1,7 +1,8 @@
 import os
+import tkinter as tk
 import xml.etree.ElementTree as ET
+from tkinter import messagebox
 from openpyxl import Workbook
-import argparse
 
 def convert_xcloc_to_excel(xcloc_folder, output_excel):
     # 创建一个 Excel Workbook
@@ -48,25 +49,48 @@ def convert_xcloc_to_excel(xcloc_folder, output_excel):
         column_letter = column[0].column_letter  # 获取列字母
         for cell in column:
             try:
-                if cell.value is not None:   # 确保单元格不为空
+                if cell.value is not None:  # 确保单元格不为空
                     cell_value = str(cell.value)
                     max_length = max(max_length, len(cell_value))  # 更新最大长度
             except Exception as e:
-                 print(f"调整列宽时发生错误: {e}")
+                print(f"调整列宽时发生错误: {e}")
         adjusted_width = (max_length + 2)  # 可以加一点额外的宽度
         ws.column_dimensions[column_letter].width = adjusted_width
     # 保存Excel文件
     wb.save(output_excel)
     print(f"转换完成，Excel文件已保存至: {output_excel}")
 
-def main():
-    parser = argparse.ArgumentParser(description='Convert Xcode .xcloc files to Excel.')
-    parser.add_argument('xcloc_folder', help='The path to the .xcloc folder')
-    parser.add_argument('output_excel', help='The path for the output Excel file')
+def run_conversion():
+    xcloc_folder = folder_entry.get()
+    output_excel = output_entry.get()
+    
+    if not os.path.isdir(xcloc_folder):
+        messagebox.showerror("错误", "无效的文件夹路径！")
+        return
+        
+    if not output_excel.endswith('.xlsx'):
+        messagebox.showerror("错误", "输出文件名必须以 .xlsx 结尾！")
+        return
 
-    args = parser.parse_args()
+    convert_xcloc_to_excel(xcloc_folder, output_excel)
+    messagebox.showinfo("完成", "转换已完成！")
 
-    convert_xcloc_to_excel(args.xcloc_folder, args.output_excel)
+# 创建图形界面
+root = tk.Tk()
+root.title("XLIFF to Excel Converter")
 
-if __name__ == "__main__":
-    main()
+# 创建输入框和标签
+tk.Label(root, text="输入 Xcloc 文件的完整路径:").pack(pady=5)
+folder_entry = tk.Entry(root, width=50)
+folder_entry.pack(pady=5)
+
+tk.Label(root, text="输出 Excel 文件名/完整目录 (.xlsx):").pack(pady=5)
+output_entry = tk.Entry(root, width=50)
+output_entry.pack(pady=5)
+
+# 创建按钮
+convert_button = tk.Button(root, text="转换", command=run_conversion)
+convert_button.pack(pady=20)
+
+# 运行主循环
+root.mainloop()
